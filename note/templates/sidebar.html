@@ -1,0 +1,16 @@
+<div class="sidebar">
+    <div class="head">
+        <h1>My Notes</h1>
+    </div>
+    <div class="body">
+            
+        <a href="{% url "home" %}">all</a>
+
+        {% for category in categories %}    
+        <p><a href="{% url 'category' category.id %}">{{category.name}}</a></p>
+        {% endfor %}
+
+    </div>
+
+
+</div>

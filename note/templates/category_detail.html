@@ -1,0 +1,12 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<div class="content">     
+   <h1>{{note.title}}</h1>
+   <div>{{note.body|safe}}</div> 
+   <a href="{% url "home" %}">back</a>       
+</div>
+
+{% endblock content %}
+   

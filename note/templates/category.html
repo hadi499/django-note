@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+{% for note in notes %}
+
+<h1><a href="{% url "detail" note.pk %}">{{note.title}}</a></h1>
+<div>{{note.body|safe|slice:50}}....</div>  
+
+
+{% endfor %}  
+
+{% endblock content %}

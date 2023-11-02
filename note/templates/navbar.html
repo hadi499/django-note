@@ -1,0 +1,17 @@
+{% load static %}
+<nav>
+    <div class="add"><a href="{% url "create" %}">
+        <img src="{% static "images/plus.png" %}" alt="">
+    </a></div>
+    <div class="search">
+        <form >
+
+            <input type="text" name="q" placeholder="Search Note">
+            <button type="submit">Search</button>
+
+        </form>
+
+    </div>
+
+
+</nav>

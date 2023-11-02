@@ -1,0 +1,20 @@
+{% extends "main.html" %}
+
+
+{% block content %}  
+
+{% for note in notes %}
+    <div class="home">
+
+    <h3><a href="{% url "detail" note.pk %}">{{note.title}}</a></h3>
+    
+
+    </div> 
+    <hr>
+{% endfor %} 
+
+
+{% endblock content %}
+
+
+
