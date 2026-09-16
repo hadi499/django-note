@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note App - Rich Text HTMX</title>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    
+    <!-- Quill.js -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill-blot-formatter@1.0.5/dist/quill-blot-formatter.min.js"></script>
+    
+    <!-- KaTeX for math formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'notes/css/styles.css' %}?v={% now 'U' %}">
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <script>
+                if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                    document.getElementById('sidebar').classList.add('collapsed');
+                }
+            </script>
+            <div class="sidebar-header" style="position: relative;">
+                <h1 style="margin-bottom: 12px;">Notes</h1>
+                <button class="sidebar-toggle" onclick="const s = document.getElementById('sidebar'); s.classList.toggle('collapsed'); localStorage.setItem('sidebarCollapsed', s.classList.contains('collapsed'));" title="Toggle Sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d3748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left" style="display: block; min-width: 18px; min-height: 18px;"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+                </button>
+                <div class="search-container">
+                    <input type="search" 
+                           name="q" 
+                           placeholder="Search title..." 
+                           hx-get="{% url 'notes:index' %}" 
+                           hx-target="#note-list" 
+                           hx-trigger="keyup changed delay:300ms, search" 
+                           class="form-control"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="sidebar-content" id="note-list"
+                 hx-get="{% url 'notes:index' %}"
+                 hx-include="[name='q']"
+                 hx-trigger="updateNoteList from:body">
+                <!-- Note list will be loaded here -->
+                {% include 'notes/partials/note_list.html' %}
+            </div>
+            <div class="sidebar-footer">
+                <button class="btn-primary" 
+                        hx-get="{% url 'notes:create_note' %}" 
+                        hx-target="#main-content" 
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                    + New Note
+                </button>
+            </div>
+        </aside>
+        
+        <div class="main-wrapper">
+            <main class="main-content" id="main-content">
+                {% block main_content %}
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h2>Select a note or create a new one</h2>
+                </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'notes/js/app.js' %}"></script>
+</body>
+</html>

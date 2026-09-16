@@ -1,0 +1,55 @@
+<div class="note-form fade-in">
+    <form id="note-form"
+          onsubmit="document.getElementById('content').value = quill ? quill.root.innerHTML : document.querySelector('.ql-editor').innerHTML"
+          hx-post="{% if note %}{% url 'notes:edit_note' note.pk %}{% else %}{% url 'notes:create_note' %}{% endif %}"
+          hx-target="#main-content"
+          hx-swap="innerHTML">
+        
+        <div class="note-header" style="margin-bottom: 24px; align-items: center;">
+            <h2 style="margin: 0;">{% if note %}Edit Note{% else %}New Note{% endif %}</h2>
+            <div class="form-actions" style="margin-top: 0;">
+                {% if note %}
+                <button type="button" class="btn-secondary"
+                        hx-get="{% url 'notes:view_note' note.pk %}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                    Cancel
+                </button>
+                {% else %}
+                <button type="button" class="btn-secondary"
+                        onclick="if(typeof cleanupUnsavedImages === 'function') cleanupUnsavedImages(); document.getElementById('main-content').innerHTML='<div class=\'empty-state\'><div class=\'empty-icon\'>📝</div><h2>Select a note or create a new one</h2></div>'; history.pushState(null, '', '/');">
+                    Cancel
+                </button>
+                {% endif %}
+                <button type="submit" class="btn-primary" style="width: auto;">Save Note</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <input type="text" 
+                   name="title" 
+                   id="title" 
+                   class="form-control" 
+                   placeholder="Note Title" 
+                   value="{{ note.title|default_if_none:'' }}"
+                   required>
+        </div>
+        
+        <div class="form-group">
+            <!-- Hidden input to store Quill content -->
+            <input type="hidden" name="content" id="content">
+            <!-- Quill Editor Container -->
+            <div id="editor" class="quill-editor">
+                {{ note.content|default_if_none:''|safe }}
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Initialize Quill JS -->
+<script>
+    if (typeof initQuill === 'function') {
+        initQuill();
+    }
+</script>

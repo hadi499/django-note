@@ -1,0 +1,58 @@
+<div class="note-detail fade-in">
+    <div class="note-header">
+        <h2 class="note-detail-title">{{ note.title }}</h2>
+        <div class="note-actions">
+            <button class="btn-secondary" onclick="window.print()" style="margin-right: 8px;" title="Print Note">
+                🖨️ Print
+            </button>
+            <button class="btn-secondary"
+                    hx-get="{% url 'notes:edit_note' note.pk %}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                Edit
+            </button>
+            <button class="btn-danger"
+                    hx-post="{% url 'notes:delete_note' note.pk %}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML"
+                    hx-confirm="Are you sure you want to delete this note?">
+                Delete
+            </button>
+        </div>
+    </div>
+    <div class="note-meta">
+        Last updated: {{ note.updated_at|date:"M d, Y, H:i" }}
+    </div>
+    <div class="note-content rich-text-content">
+        {{ note.content|safe }}
+    </div>
+</div>
+<script>
+    if (typeof katex !== 'undefined') {
+        // Render Quill formulas
+        document.querySelectorAll('.ql-formula').forEach(el => {
+            let formula = el.getAttribute('data-value');
+            if (formula) {
+                katex.render(formula, el, {
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // Auto-render manual text latex ($$...$$ or \(...\))
+        if (typeof renderMathInElement !== 'undefined') {
+            document.querySelectorAll('.note-content').forEach(el => {
+                renderMathInElement(el, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            });
+        }
+    }
+</script>

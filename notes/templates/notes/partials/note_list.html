@@ -1,0 +1,31 @@
+{% if notes %}
+    <ul class="note-list">
+        {% for note in notes %}
+        <li class="note-item" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-right: 8px;">
+            <div style="flex: 1; overflow: hidden; padding-right: 8px; cursor: pointer;"
+                 hx-get="{% url 'notes:view_note' note.pk %}" 
+                 hx-target="#main-content" 
+                 hx-swap="innerHTML"
+                 hx-push-url="true">
+                <div class="note-title">{{ note.title }}</div>
+                <div class="note-date">{{ note.updated_at|date:"M d, Y" }}</div>
+            </div>
+            <button class="btn-danger" style="padding: 6px; background: transparent; min-width: unset; width: auto; opacity: 0.6;"
+                    hx-post="{% url 'notes:delete_note' note.pk %}"
+                    hx-target="#main-content"
+                    hx-swap="innerHTML"
+                    hx-confirm="Are you sure you want to delete '{{ note.title|escapejs }}'?"
+                    title="Delete Note"
+                    onmouseover="this.style.opacity='1'"
+                    onmouseout="this.style.opacity='0.6'">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="empty-list">No notes yet.</div>
+{% endif %}
