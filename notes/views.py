@@ -1,6 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from .models import Note
+from .models import Note, Folder
 import os
 from django.conf import settings
 
@@ -8,34 +8,51 @@ def is_htmx_request(request):
     return request.headers.get('HX-Request') == 'true'
 
 def index(request):
-    query = request.GET.get('q', '').strip()
-    if query:
-        notes = Note.objects.filter(title__icontains=query)
-    else:
-        notes = Note.objects.all()
-        
-    context = {'notes': notes}
-    if is_htmx_request(request):
-        return render(request, 'notes/partials/note_list.html', context)
+    folders = Folder.objects.all()
+    context = {'folders': folders}
     return render(request, 'notes/index.html', context)
 
-def create_note(request):
+def create_folder(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if name:
+            folder = Folder.objects.create(name=name)
+            return redirect('notes:folder_detail', pk=folder.pk)
+    return redirect('notes:index')
+
+def delete_folder(request, pk):
+    folder = get_object_or_404(Folder, pk=pk)
+    if request.method == 'POST':
+        if folder.notes.count() == 0:
+            folder.delete()
+        return redirect('notes:index')
+    return HttpResponse('Invalid request', status=400)
+
+def folder_detail(request, pk):
+    folder = get_object_or_404(Folder, pk=pk)
+    notes = folder.notes.all()
+    context = {'folder': folder, 'notes': notes}
+    if is_htmx_request(request):
+        return render(request, 'notes/folder_detail.html', context)
+    return render(request, 'notes/folder_detail.html', context)
+
+def create_note(request, folder_id):
+    folder = get_object_or_404(Folder, pk=folder_id)
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '')
         if title:
-            note = Note.objects.create(title=title, content=content)
-            response = render(request, 'notes/partials/note_detail.html', {'note': note})
-            response['HX-Trigger'] = 'updateNoteList'
-            response['HX-Push-Url'] = f'/note/{note.pk}/'
-            return response
-        # If title is empty, maybe return an error?
+            note = Note.objects.create(title=title, content=content, folder=folder)
+            if is_htmx_request(request):
+                response = render(request, 'notes/partials/note_detail.html', {'note': note})
+                response['HX-Push-Url'] = f'/note/{note.pk}/'
+                return response
+            return redirect('notes:view_note', pk=note.pk)
         return HttpResponse("Title is required", status=400)
     
-    context = {'note': None}
+    context = {'note': None, 'folder': folder}
     if is_htmx_request(request):
         return render(request, 'notes/partials/note_form.html', context)
-    context['notes'] = Note.objects.all()
     return render(request, 'notes/create_note.html', context)
 
 def view_note(request, pk):
@@ -43,7 +60,6 @@ def view_note(request, pk):
     context = {'note': note}
     if is_htmx_request(request):
         return render(request, 'notes/partials/note_detail.html', context)
-    context['notes'] = Note.objects.all()
     return render(request, 'notes/view_note.html', context)
 
 def edit_note(request, pk):
@@ -72,31 +88,35 @@ def edit_note(request, pk):
             note.title = title
             note.content = new_content
             note.save()
-            response = render(request, 'notes/partials/note_detail.html', {'note': note})
-            response['HX-Trigger'] = 'updateNoteList'
-            response['HX-Push-Url'] = f'/note/{note.pk}/'
-            return response
+            if is_htmx_request(request):
+                response = render(request, 'notes/partials/note_detail.html', {'note': note})
+                response['HX-Push-Url'] = f'/note/{note.pk}/'
+                return response
+            return redirect('notes:view_note', pk=note.pk)
         return HttpResponse("Title is required", status=400)
     
     context = {'note': note}
     if is_htmx_request(request):
         return render(request, 'notes/partials/note_form.html', context)
-    context['notes'] = Note.objects.all()
     return render(request, 'notes/edit_note.html', context)
 
 def delete_note(request, pk):
     note = get_object_or_404(Note, pk=pk)
     if request.method == 'POST' or request.method == 'DELETE':
+        folder_pk = note.folder.pk if note.folder else None
         note.delete()
-        response = HttpResponse('''
-            <div class="empty-state fade-in">
-                <div class="empty-icon">📝</div>
-                <h2>Select a note or create a new one</h2>
-            </div>
-        ''')
-        response['HX-Trigger'] = 'updateNoteList'
-        response['HX-Push-Url'] = '/'
-        return response
+        if folder_pk:
+            if is_htmx_request(request):
+                response = HttpResponse('')
+                response['HX-Redirect'] = f'/folder/{folder_pk}/'
+                return response
+            return redirect('notes:folder_detail', pk=folder_pk)
+            
+        if is_htmx_request(request):
+            response = HttpResponse('')
+            response['HX-Redirect'] = '/'
+            return response
+        return redirect('notes:index')
     return HttpResponse('Invalid request', status=400)
 
 from django.core.files.storage import FileSystemStorage

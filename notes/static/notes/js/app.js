@@ -208,5 +208,5 @@ function initQuill() {
 
 // Initial check when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Basic setup, but HTMX will handle navigation mostly.
+    initQuill();
 });

@@ -151,8 +151,9 @@ body {
 }
 
 .sidebar.collapsed .sidebar-toggle {
-    right: -56px; /* 32px width + 24px margin to show it outside */
-    background-color: transparent; 
+    right: -56px;
+    /* 32px width + 24px margin to show it outside */
+    background-color: transparent;
     border: none;
     box-shadow: none;
 }
@@ -293,7 +294,8 @@ button {
     stroke: var(--text-primary);
 }
 
-.ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
     fill: var(--text-primary);
 }
 
@@ -302,15 +304,18 @@ button {
 }
 
 /* Note Detail */
-.note-detail, .note-form {
+.note-detail,
+.note-form {
     max-width: 21cm;
     width: 100%;
     margin: 0 auto;
     background: var(--surface-color);
     padding: 40px 50px;
-    border-radius: 0 0 8px 8px; /* Flat at top */
+    border-radius: 0 0 8px 8px;
+    /* Flat at top */
     box-shadow: var(--shadow);
-    min-height: 29.7cm; /* A4 aspect ratio height */
+    min-height: 29.7cm;
+    /* A4 aspect ratio height */
 }
 
 .note-header {
@@ -325,12 +330,13 @@ button {
     padding: 0 50px;
     height: 88px;
     border-bottom: 1px solid var(--border-color);
-    border-radius: 0; /* Flat at top */
+    border-radius: 0;
+    /* Flat at top */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .note-detail-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -348,8 +354,8 @@ button {
     font-size: 1.05rem;
 }
 
-.rich-text-content h1, 
-.rich-text-content h2, 
+.rich-text-content h1,
+.rich-text-content h2,
 .rich-text-content h3 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
@@ -360,7 +366,7 @@ button {
     margin-bottom: 1em;
 }
 
-.rich-text-content ul, 
+.rich-text-content ul,
 .rich-text-content ol {
     margin-bottom: 1em;
     padding-left: 2em;
@@ -377,8 +383,15 @@ button {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Custom Scrollbar */
@@ -401,18 +414,24 @@ button {
 
 /* Print Styles */
 @media print {
-    body, html {
+
+    body,
+    html {
         height: auto !important;
         overflow: visible !important;
         background: white !important;
         color: black !important;
     }
-    
-    .sidebar, .sidebar-toggle, .note-actions, .note-meta {
+
+    .sidebar,
+    .sidebar-toggle,
+    .note-actions,
+    .note-meta {
         display: none !important;
     }
-    
-    .main-wrapper, .main-content {
+
+    .main-wrapper,
+    .main-content {
         padding: 0 !important;
         margin: 0 !important;
         height: auto !important;
@@ -421,11 +440,11 @@ button {
         background: white !important;
         border: none !important;
     }
-    
+
     .app-container {
         display: block !important;
     }
-    
+
     .note-detail {
         page-break-inside: avoid;
         box-shadow: none !important;
@@ -434,14 +453,14 @@ button {
         max-width: none !important;
         min-height: auto !important;
     }
-    
+
     .note-header {
         position: static !important;
         margin: 0 !important;
         padding: 0 !important;
         border: none !important;
     }
-    
+
     .note-content img {
         max-width: 100% !important;
         page-break-inside: avoid;

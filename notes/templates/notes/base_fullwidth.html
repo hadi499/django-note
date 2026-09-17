@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note App</title>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
+    
+    <!-- Quill.js -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill-blot-formatter@1.0.5/dist/quill-blot-formatter.min.js"></script>
+    
+    <!-- KaTeX for math formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'notes/css/styles.css' %}?v={% now 'U' %}">
+    
+    <style>
+        /* New polished styles */
+        :root {
+            --app-bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --border: #e5e7eb;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background-color: var(--app-bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .main-content.fullwidth {
+            padding: 48px 32px;
+            max-width: 1024px;
+            margin: 0 auto;
+            width: 100%;
+            background: transparent;
+            overflow: visible;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header-bar h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        /* Forms in header */
+        .header-form {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .header-form input {
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            width: 240px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .header-form button {
+            border-radius: 8px;
+            background: var(--text-main);
+            color: white;
+            padding: 10px 20px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .header-form button:hover {
+            background: #000;
+            transform: translateY(-1px);
+        }
+
+        /* Folder Grid */
+        .modern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .folder-card-new {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            text-decoration: none;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .folder-card-new:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: #d1d5db;
+            transform: translateY(-4px);
+        }
+        
+        .folder-card-new::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, #60a5fa, #818cf8);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .folder-card-new:hover::before {
+            opacity: 1;
+        }
+
+        .folder-icon-wrapper {
+            background: #eff6ff;
+            color: #3b82f6;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .folder-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .folder-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Note Cards */
+        .note-card-new {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+            height: 100%;
+        }
+
+        .note-card-new:hover {
+            border-color: #9ca3af;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .note-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .note-card-date {
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .note-detail {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .note-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 24px 32px;
+            margin: 0;
+            box-shadow: none;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            position: static !important; /* Force override styles.css */
+        }
+        .note-detail-title {
+            font-size: 1.75rem;
+            margin: 0;
+        }
+        
+        .ql-toolbar.ql-snow {
+            top: 57px !important; /* Sticks directly below the navbar */
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(8px);
+            z-index: 40;
+        }
+        
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px 8px 0;
+            transition: color 0.2s;
+        }
+        .btn-back:hover {
+            color: var(--text-main);
+        }
+        .btn-back svg {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <header class="navbar">
+        <a href="/" class="navbar-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            NoteBox
+        </a>
+    </header>
+
+    <main class="main-content fullwidth" id="main-content">
+        {% block main_content %}
+        {% endblock %}
+    </main>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'notes/js/app.js' %}"></script>
+</body>
+</html>
