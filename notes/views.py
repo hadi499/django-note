@@ -7,9 +7,16 @@ from django.conf import settings
 def is_htmx_request(request):
     return request.headers.get('HX-Request') == 'true'
 
+from django.db.models import Q
+
 def index(request):
-    folders = Folder.objects.all()
-    context = {'folders': folders}
+    q = request.GET.get('q', '').strip()
+    if q:
+        notes = Note.objects.filter(Q(title__icontains=q) | Q(content__icontains=q)).select_related('folder')
+        context = {'folders': [], 'notes': notes, 'q': q}
+    else:
+        folders = Folder.objects.all()
+        context = {'folders': folders, 'q': q}
     return render(request, 'notes/index.html', context)
 
 def create_folder(request):

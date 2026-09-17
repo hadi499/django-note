@@ -1,47 +1,96 @@
 {% extends 'notes/base_fullwidth.html' %}
 
 {% block main_content %}
+<div class="search-container fade-in" style="margin-bottom: 32px; display: flex; justify-content: center;">
+    <form method="GET" action="{% url 'notes:index' %}" class="header-form" style="width: 100%; max-width: 600px;">
+        <div style="position: relative; width: 100%;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+            <input type="text" name="q" value="{{ q }}" placeholder="Search notes..." autocomplete="off" style="width: 100%; padding: 14px 48px 14px 48px; border-radius: 12px; border: 1px solid #d1d5db; background: #ffffff; color: #111827; font-size: 16px; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none';">
+            {% if q %}
+            <a href="{% url 'notes:index' %}" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #9ca3af; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s, color 0.2s;" onmouseover="this.style.backgroundColor='#f3f4f6'; this.style.color='#4b5563';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#9ca3af';" title="Clear Search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </a>
+            {% endif %}
+        </div>
+        <button type="submit" style="display: none;">Search</button>
+    </form>
+</div>
+
 <div class="header-bar fade-in">
-    <h1>Folders</h1>
-    <form method="POST" action="{% url 'notes:create_folder' %}" class="header-form">
+    <h1>{% if q %}Search Results{% else %}Folders{% endif %}</h1>
+
+    {% if not q %}
+    <form method="POST" action="{% url 'notes:create_folder' %}" class="header-form" style="margin-left: auto;">
         {% csrf_token %}
         <input type="text" name="name" placeholder="New folder name..." required autocomplete="off">
         <button type="submit">Create</button>
     </form>
+    {% endif %}
 </div>
 
 <div class="modern-grid fade-in">
-    {% for folder in folders %}
-    <div class="folder-card-new" style="padding: 0; position: relative;">
-        <a href="{% url 'notes:folder_detail' folder.pk %}" style="padding: 24px; text-decoration: none; color: inherit; display: flex; align-items: flex-start; gap: 16px; height: 100%; width: 100%;">
-            <div class="folder-icon-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            </div>
-            <div class="folder-info">
-                <h3>{{ folder.name }}</h3>
-                <p>{{ folder.notes.count }} note{{ folder.notes.count|pluralize }}</p>
-            </div>
-        </a>
-        
-        {% if folder.notes.count == 0 %}
-        <form method="POST" action="{% url 'notes:delete_folder' folder.pk %}" style="position: absolute; bottom: 20px; right: 20px; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this empty folder?');">
-            {% csrf_token %}
-            <button type="submit" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Delete Empty Folder">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </button>
-        </form>
-        {% else %}
-        <div style="position: absolute; bottom: 20px; right: 20px; margin: 0; color: #d1d5db; padding: 6px; display: flex; align-items: center; justify-content: center;" title="Folder must be empty to be deleted">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+    {% if q %}
+        {% for note in notes %}
+        <div class="note-card-new" style="padding: 0; position: relative;">
+            <a href="{% url 'notes:view_note' note.pk %}" style="padding: 24px; text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%;">
+                <div class="note-card-title">
+                    {{ note.title }}
+                </div>
+                <div class="note-card-date">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    {{ note.updated_at|date:"M d, Y" }}
+                    {% if note.folder %}
+                    <span style="margin-left: 8px; color: #9ca3af;">• {{ note.folder.name }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <form method="POST" action="{% url 'notes:delete_note' note.pk %}" style="position: absolute; bottom: 20px; right: 20px; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this note?');">
+                {% csrf_token %}
+                <button type="submit" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Delete Note">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+            </form>
         </div>
-        {% endif %}
-    </div>
-    {% empty %}
-    <div class="empty-state" style="grid-column: 1 / -1; margin-top: 60px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <h2 style="color: #4b5563; font-weight: 600;">No folders yet</h2>
-        <p style="color: #6b7280;">Create your first folder to start organizing notes.</p>
-    </div>
-    {% endfor %}
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1; margin-top: 60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <h2 style="color: #4b5563; font-weight: 600;">No notes found</h2>
+            <p style="color: #6b7280;">We couldn't find any notes matching "{{ q }}".</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        {% for folder in folders %}
+        <div class="folder-card-new" style="padding: 0; position: relative;">
+            <a href="{% url 'notes:folder_detail' folder.pk %}" style="padding: 24px; text-decoration: none; color: inherit; display: flex; align-items: flex-start; gap: 16px; height: 100%; width: 100%;">
+                <div class="folder-icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="folder-info">
+                    <h3>{{ folder.name }}</h3>
+                    <p>{{ folder.notes.count }} note{{ folder.notes.count|pluralize }}</p>
+                </div>
+            </a>
+            
+            {% if folder.notes.count == 0 %}
+            <form method="POST" action="{% url 'notes:delete_folder' folder.pk %}" style="position: absolute; bottom: 20px; right: 20px; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this empty folder?');">
+                {% csrf_token %}
+                <button type="submit" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Delete Empty Folder">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+            </form>
+            {% else %}
+            <div style="position: absolute; bottom: 20px; right: 20px; margin: 0; color: #d1d5db; padding: 6px; display: flex; align-items: center; justify-content: center;" title="Folder must be empty to be deleted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1; margin-top: 60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <h2 style="color: #4b5563; font-weight: 600;">No folders yet</h2>
+            <p style="color: #6b7280;">Create your first folder to start organizing notes.</p>
+        </div>
+        {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}
